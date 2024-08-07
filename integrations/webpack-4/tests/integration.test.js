@@ -2,11 +2,12 @@ let $ = require('../../execute')
 let { css, html, javascript } = require('../../syntax')
 
 let {
-  readOutputFile,
   appendToInputFile,
-  writeInputFile,
-  waitForOutputFileCreation,
+  readOutputFile,
+  removeFile,
   waitForOutputFileChange,
+  waitForOutputFileCreation,
+  writeInputFile,
 } = require('../../io')({ output: 'dist', input: 'src' })
 
 describe('static build', () => {
@@ -19,6 +20,92 @@ describe('static build', () => {
       css`
         .font-bold {
           font-weight: 700;
+        }
+      `
+    )
+  })
+
+  it('can use a tailwind.config.js configuration file with ESM syntax', async () => {
+    await removeFile('tailwind.config.js')
+    await writeInputFile('index.html', html`<div class="bg-primary"></div>`)
+    await writeInputFile(
+      'index.css',
+      css`
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+      `
+    )
+    await writeInputFile(
+      '../tailwind.config.js',
+      javascript`
+        export default {
+          content: ['./src/index.html'],
+          theme: {
+            extend: {
+              colors: {
+                primary: 'black',
+              },
+            },
+          },
+          corePlugins: {
+            preflight: false,
+          },
+        }
+      `
+    )
+
+    await $('webpack --mode=production')
+
+    expect(await readOutputFile('main.css')).toIncludeCss(
+      css`
+        .bg-primary {
+          --tw-bg-opacity: 1;
+          background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+        }
+      `
+    )
+  })
+
+  it('can use a tailwind.config.ts configuration file', async () => {
+    await removeFile('tailwind.config.js')
+    await writeInputFile('index.html', html`<div class="bg-primary"></div>`)
+    await writeInputFile(
+      'index.css',
+      css`
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+      `
+    )
+    await writeInputFile(
+      '../tailwind.config.ts',
+      javascript`
+        import type { Config } from 'tailwindcss'
+
+        export default {
+          content: ['./src/index.html'],
+          theme: {
+            extend: {
+              colors: {
+                primary: 'black',
+              },
+            },
+          },
+          corePlugins: {
+            preflight: false,
+          },
+        } satisfies Config
+      `
+    )
+
+    await $('webpack --mode=production')
+
+    expect(await readOutputFile('main.css')).toIncludeCss(
+      css`
+        .bg-primary {
+          --tw-bg-opacity: 1;
+          background-color: rgb(0 0 0 / var(--tw-bg-opacity));
         }
       `
     )

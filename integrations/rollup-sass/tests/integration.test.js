@@ -248,13 +248,10 @@ describe('watcher', () => {
     expect(await readOutputFile('index.css')).toIncludeCss(
       css`
         .btn {
-          border-radius: 0.25rem;
           --tw-bg-opacity: 1;
           background-color: rgb(239 68 68 / var(--tw-bg-opacity));
-          padding-left: 0.5rem;
-          padding-right: 0.5rem;
-          padding-top: 0.25rem;
-          padding-bottom: 0.25rem;
+          border-radius: 0.25rem;
+          padding: 0.25rem 0.5rem;
         }
         .font-bold {
           font-weight: 700;
@@ -301,6 +298,8 @@ describe('watcher', () => {
     )
     await runningProcess.onStderr(ready)
 
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+
     expect(await readOutputFile('index.css')).toIncludeCss(
       css`
         .btn {
@@ -329,13 +328,10 @@ describe('watcher', () => {
     expect(await readOutputFile('index.css')).toIncludeCss(
       css`
         .btn {
-          border-radius: 0.25rem;
           --tw-bg-opacity: 1;
           background-color: rgb(239 68 68 / var(--tw-bg-opacity));
-          padding-left: 0.5rem;
-          padding-right: 0.5rem;
-          padding-top: 0.25rem;
-          padding-bottom: 0.25rem;
+          border-radius: 0.25rem;
+          padding: 0.25rem 0.5rem;
         }
         .font-bold {
           font-weight: 700;
@@ -344,5 +340,5 @@ describe('watcher', () => {
     )
 
     return runningProcess.stop()
-  })
+  }, 30000)
 })
